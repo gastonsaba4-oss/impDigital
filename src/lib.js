@@ -79,6 +79,78 @@ export const PRESET_PALETTES = [
     surfaceTint: "#f5f3ff",
     fontDisplay: "Fraunces",
   },
+  {
+    id: "bosque",
+    name: "Bosque",
+    description: "Verde profundo, natural",
+    primary: "#166534",
+    primaryHover: "#14532d",
+    ink: "#14210f",
+    inkSoft: "#28381f",
+    accent: "#a16207",
+    surfaceTint: "#f0fdf4",
+    fontDisplay: "Fraunces",
+  },
+  {
+    id: "grafito",
+    name: "Grafito",
+    description: "Corporativo, sobrio",
+    primary: "#334155",
+    primaryHover: "#1e293b",
+    ink: "#0f172a",
+    inkSoft: "#1e293b",
+    accent: "#0891b2",
+    surfaceTint: "#f8fafc",
+    fontDisplay: "Playfair Display",
+  },
+  {
+    id: "miel",
+    name: "Miel",
+    description: "Cálido, artesanal",
+    primary: "#a16207",
+    primaryHover: "#854d0e",
+    ink: "#292118",
+    inkSoft: "#453321",
+    accent: "#b91c1c",
+    surfaceTint: "#fffbeb",
+    fontDisplay: "DM Serif Display",
+  },
+  {
+    id: "cielo",
+    name: "Cielo",
+    description: "Claro, liviano",
+    primary: "#2563eb",
+    primaryHover: "#1d4ed8",
+    ink: "#1e2a3a",
+    inkSoft: "#2d3f56",
+    accent: "#db2777",
+    surfaceTint: "#eff6ff",
+    fontDisplay: "Inter",
+  },
+  {
+    id: "vino",
+    name: "Vino",
+    description: "Elegante, intenso",
+    primary: "#9f1239",
+    primaryHover: "#881337",
+    ink: "#1c1310",
+    inkSoft: "#3a1f1a",
+    accent: "#a16207",
+    surfaceTint: "#fff1f2",
+    fontDisplay: "Playfair Display",
+  },
+  {
+    id: "coral",
+    name: "Coral",
+    description: "Fresco, contemporáneo",
+    primary: "#e11d48",
+    primaryHover: "#be123c",
+    ink: "#1f1315",
+    inkSoft: "#3a2226",
+    accent: "#0d9488",
+    surfaceTint: "#fff1f2",
+    fontDisplay: "Inter",
+  },
 ];
 
 export function getPalette(id) {
@@ -119,6 +191,11 @@ export const GLOBAL_CSS = `
 .lg-toast{animation:lg-fade-in .25s ease;}
 @keyframes lg-slide-in{from{transform:translateX(100%);}to{transform:translateX(0);}}
 .lg-drawer{animation:lg-slide-in .3s cubic-bezier(.16,1,.3,1);}
+.radius-sharp .rounded-3xl{border-radius:0.5rem;}
+.radius-sharp .rounded-2xl{border-radius:0.5rem;}
+.radius-sharp .rounded-xl{border-radius:0.375rem;}
+.radius-sharp .rounded-lg{border-radius:0.25rem;}
+.hero-bg-image{background-size:cover;background-position:center;}
 @media (prefers-reduced-motion: reduce){ *{animation-duration:0.01ms !important; transition-duration:0.01ms !important;} }
 `;
 
@@ -303,6 +380,7 @@ export function siteKey(siteId, part) {
 
 export const DEFAULT_SITE_CONFIG = {
   tagline: "Elegí tus productos y coordinamos el pedido por WhatsApp.",
+  heroButtonText: "Ver productos",
   welcomeText: "Mirá nuestros productos y hacé tu pedido en un toque.",
   whatsapp: "",
   currency: "$",

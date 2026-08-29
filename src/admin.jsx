@@ -414,6 +414,9 @@ export function AdminConfigForm({ config, onSave }) {
         <Field label="Frase principal (hero)">
           <input value={form.tagline} onChange={(e) => set("tagline", e.target.value)} className={inputCls()} />
         </Field>
+        <Field label="Texto del botón principal">
+          <input value={form.heroButtonText} onChange={(e) => set("heroButtonText", e.target.value)} className={inputCls()} placeholder="Ver productos" />
+        </Field>
         <Field label="Texto de bienvenida">
           <textarea rows={3} value={form.welcomeText} onChange={(e) => set("welcomeText", e.target.value)} className={inputCls()} />
         </Field>

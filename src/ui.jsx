@@ -64,7 +64,7 @@ export function CategoryPill({ active, label, icon: Icon, onClick }) {
   );
 }
 
-export function ImageSlot({ value, onChange, label }) {
+export function ImageSlot({ value, onChange, label, maxDim, quality, aspect }) {
   const inputRef = useRef(null);
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -76,7 +76,7 @@ export function ImageSlot({ value, onChange, label }) {
     if (!file) return;
     setBusy(true);
     try {
-      const dataUrl = await resizeImageFile(file, 1000, 0.72);
+      const dataUrl = await resizeImageFile(file, maxDim || 1000, quality || 0.72);
       onChange(dataUrl);
       setShowUrlInput(false);
     } catch (err) {
@@ -87,7 +87,7 @@ export function ImageSlot({ value, onChange, label }) {
 
   return (
     <div className="flex items-center gap-3">
-      <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-stone-200 bg-stone-50 shrink-0">
+      <div className={`relative rounded-xl overflow-hidden border border-stone-200 bg-stone-50 shrink-0 ${aspect === "wide" ? "w-24 h-16" : "w-16 h-16"}`}>
         {value ? (
           <>
             <img src={value} alt="" className="w-full h-full object-cover" />

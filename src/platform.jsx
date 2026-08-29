@@ -1,7 +1,10 @@
-import { useState } from "react";
-import { Plus, Pencil, Trash2, ArrowLeft, Share2, ExternalLink, Store, RefreshCw } from "lucide-react";
-import { PRESET_PALETTES, getPalette, genId, slugify } from "./lib.js";
-import { Field, inputCls } from "./ui.jsx";
+import { useState, useEffect } from "react";
+import {
+  Plus, Pencil, Trash2, ArrowLeft, Share2, ExternalLink, Store, RefreshCw,
+  Image as ImageIcon, Rows, Square, SquareStack,
+} from "lucide-react";
+import { PRESET_PALETTES, getPalette, genId, slugify, loadShared, siteKey } from "./lib.js";
+import { Field, inputCls, ImageSlot } from "./ui.jsx";
 
 function PaletteSwatch({ palette, size }) {
   const s = size || 32;
@@ -16,7 +19,7 @@ function PaletteSwatch({ palette, size }) {
 
 function PalettePicker({ value, onChange }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-80 overflow-y-auto pr-1">
       {PRESET_PALETTES.map((p) => (
         <button
           type="button"
@@ -35,22 +38,85 @@ function PalettePicker({ value, onChange }) {
   );
 }
 
+const HERO_STYLES = [
+  { id: "text", label: "Solo texto", Icon: Rows },
+  { id: "full", label: "Imagen de fondo", Icon: SquareStack },
+  { id: "side", label: "Imagen al costado", Icon: ImageIcon },
+];
+
+function HeroStylePicker({ value, onChange }) {
+  return (
+    <div className="grid grid-cols-3 gap-2.5">
+      {HERO_STYLES.map((s) => (
+        <button
+          type="button"
+          key={s.id}
+          onClick={() => onChange(s.id)}
+          className={`flex flex-col items-center gap-1.5 rounded-2xl border p-3 transition ${value === s.id ? "border-stone-900 bg-stone-50" : "border-stone-200 hover:border-stone-400"}`}
+        >
+          <s.Icon size={18} className="text-stone-600" />
+          <span className="text-xs font-medium text-stone-700 text-center">{s.label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function RadiusPicker({ value, onChange }) {
+  return (
+    <div className="grid grid-cols-2 gap-2.5">
+      <button
+        type="button"
+        onClick={() => onChange("rounded")}
+        className={`flex items-center gap-2.5 rounded-2xl border p-3 transition ${value === "rounded" ? "border-stone-900 bg-stone-50" : "border-stone-200 hover:border-stone-400"}`}
+      >
+        <span className="w-8 h-8 bg-stone-300 rounded-2xl shrink-0" />
+        <span className="text-xs font-medium text-stone-700">Redondeado</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => onChange("sharp")}
+        className={`flex items-center gap-2.5 rounded-lg border p-3 transition ${value === "sharp" ? "border-stone-900 bg-stone-50" : "border-stone-200 hover:border-stone-400"}`}
+      >
+        <span className="w-8 h-8 bg-stone-300 rounded-md shrink-0" />
+        <span className="text-xs font-medium text-stone-700">Recto</span>
+      </button>
+    </div>
+  );
+}
+
 function SiteForm({ site, onCancel, onSave, existingSlugs }) {
   const isNew = !site;
   const [name, setName] = useState(site ? site.name : "");
   const [paletteId, setPaletteId] = useState(site ? site.paletteId : PRESET_PALETTES[0].id);
+  const [heroStyle, setHeroStyle] = useState(site && site.heroStyle ? site.heroStyle : "text");
+  const [radiusStyle, setRadiusStyle] = useState(site && site.radiusStyle ? site.radiusStyle : "rounded");
+  const [logoImage, setLogoImage] = useState("");
+  const [heroImage, setHeroImage] = useState("");
+  const [faviconImage, setFaviconImage] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!site) return;
+    (async () => {
+      const branding = await loadShared(siteKey(site.id, "branding"), {});
+      setLogoImage(branding.logoImage || "");
+      setHeroImage(branding.heroImage || "");
+      setFaviconImage(branding.faviconImage || "");
+    })();
+  }, [site]);
 
   function submit(e) {
     e.preventDefault();
     if (!name.trim()) { setError("Ingresá un nombre."); return; }
+    const branding = { logoImage, heroImage, faviconImage };
     if (isNew) {
       let slug = slugify(name);
       let n = 2;
       while (existingSlugs.includes(slug)) { slug = `${slugify(name)}-${n}`; n += 1; }
-      onSave({ id: genId("site"), slug, name: name.trim(), paletteId });
+      onSave({ id: genId("site"), slug, name: name.trim(), paletteId, heroStyle, radiusStyle, branding });
     } else {
-      onSave({ ...site, name: name.trim(), paletteId });
+      onSave({ ...site, name: name.trim(), paletteId, heroStyle, radiusStyle, branding });
     }
   }
 
@@ -65,10 +131,36 @@ function SiteForm({ site, onCancel, onSave, existingSlugs }) {
           <input value={name} onChange={(e) => setName(e.target.value)} className={inputCls(error)} placeholder="Ej: Panadería Doña Rosa" />
         </Field>
         {!isNew && <p className="text-xs text-stone-400 -mt-4">Link de la tienda: /t/{site.slug} (no se puede cambiar).</p>}
+
         <div>
           <label className="block text-xs font-semibold text-stone-600 mb-2">Paleta de diseño</label>
           <PalettePicker value={paletteId} onChange={setPaletteId} />
         </div>
+
+        <Field label="Logo (reemplaza la inicial en el encabezado)">
+          <ImageSlot value={logoImage} onChange={setLogoImage} maxDim={500} quality={0.85} />
+        </Field>
+
+        <div>
+          <label className="block text-xs font-semibold text-stone-600 mb-2">Estilo de portada</label>
+          <HeroStylePicker value={heroStyle} onChange={setHeroStyle} />
+        </div>
+
+        {heroStyle !== "text" && (
+          <Field label={heroStyle === "full" ? "Imagen de fondo de la portada" : "Imagen al costado de la portada"}>
+            <ImageSlot value={heroImage} onChange={setHeroImage} maxDim={1400} quality={0.65} aspect="wide" />
+          </Field>
+        )}
+
+        <div>
+          <label className="block text-xs font-semibold text-stone-600 mb-2">Estilo de bordes</label>
+          <RadiusPicker value={radiusStyle} onChange={setRadiusStyle} />
+        </div>
+
+        <Field label="Ícono de la pestaña del navegador (favicon)">
+          <ImageSlot value={faviconImage} onChange={setFaviconImage} maxDim={256} quality={0.85} />
+        </Field>
+
         <button type="submit" className="w-full rounded-full bg-stone-900 hover:bg-stone-800 text-white font-semibold py-3">
           {isNew ? "Crear tienda" : "Guardar cambios"}
         </button>

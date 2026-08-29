@@ -13,9 +13,13 @@ export function Header({ branding, categories, cartCount, onCartClick, onLogoCli
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16 gap-3">
           <button type="button" onClick={onLogoClick} className="flex items-center gap-2 min-w-0 flex-1">
-            <span className="w-9 h-9 rounded-full bg-brand-ink flex items-center justify-center shrink-0">
-              <span className="font-display font-bold text-sm text-brand-accent">{initial}</span>
-            </span>
+            {branding.logoImage ? (
+              <img src={branding.logoImage} alt={branding.name} className="w-9 h-9 rounded-full object-cover shrink-0 border border-stone-200" />
+            ) : (
+              <span className="w-9 h-9 rounded-full bg-brand-ink flex items-center justify-center shrink-0">
+                <span className="font-display font-bold text-sm text-brand-accent">{initial}</span>
+              </span>
+            )}
             <span className="font-display font-bold text-base sm:text-lg text-stone-900 truncate">{branding.name}</span>
           </button>
           <button
@@ -54,33 +58,60 @@ export function Header({ branding, categories, cartCount, onCartClick, onLogoCli
 }
 
 export function Hero({ branding, config, onCta, waLink, waReady }) {
+  const heroStyle = branding.heroStyle || "text";
+  const heroImage = branding.heroImage;
+  const buttonText = config.heroButtonText || "Ver productos";
+
+  const textBlock = (
+    <div>
+      <h1 className="font-display text-4xl sm:text-5xl font-bold leading-tight max-w-2xl">
+        {config.tagline || `Bienvenido a ${branding.name}`}
+      </h1>
+      <p className="mt-4 text-stone-300 text-base sm:text-lg max-w-md">{config.welcomeText}</p>
+      <div className="mt-7 flex flex-wrap gap-3">
+        <button type="button" onClick={onCta} className="rounded-full bg-brand hover:opacity-90 text-white font-semibold px-6 py-3 transition">
+          {buttonText}
+        </button>
+        {waReady && (
+          <a
+            href={waLink}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-full border border-stone-600 hover:border-stone-400 text-stone-100 font-semibold px-6 py-3 inline-flex items-center gap-2 transition"
+          >
+            <MessageCircle size={18} /> Escribinos
+          </a>
+        )}
+      </div>
+    </div>
+  );
+
+  if (heroStyle === "full" && heroImage) {
+    return (
+      <section className="relative text-stone-50 overflow-hidden hero-bg-image" style={{ backgroundImage: `url(${heroImage})` }}>
+        <div className="absolute inset-0 bg-brand-ink opacity-70" />
+        <div className="max-w-6xl mx-auto px-4 sm:px-8 py-16 sm:py-24 relative z-10">{textBlock}</div>
+      </section>
+    );
+  }
+
+  if (heroStyle === "side" && heroImage) {
+    return (
+      <section className="relative bg-brand-ink text-stone-50 overflow-hidden">
+        <div className="max-w-6xl mx-auto px-4 sm:px-8 py-14 sm:py-20 relative z-10 grid sm:grid-cols-2 gap-8 items-center">
+          {textBlock}
+          <div className="rounded-3xl overflow-hidden aspect-square hidden sm:block">
+            <img src={heroImage} alt={branding.name} className="w-full h-full object-cover" />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="relative bg-brand-ink text-stone-50 overflow-hidden">
-      <div
-        className="absolute w-72 h-72 rounded-full bg-brand opacity-20 blur-3xl pointer-events-none"
-        style={{ top: "-6rem", right: "-6rem" }}
-      />
-      <div className="max-w-6xl mx-auto px-4 sm:px-8 py-14 sm:py-20 relative z-10">
-        <h1 className="font-display text-4xl sm:text-5xl font-bold leading-tight max-w-2xl">
-          {config.tagline || `Bienvenido a ${branding.name}`}
-        </h1>
-        <p className="mt-4 text-stone-300 text-base sm:text-lg max-w-md">{config.welcomeText}</p>
-        <div className="mt-7 flex flex-wrap gap-3">
-          <button type="button" onClick={onCta} className="rounded-full bg-brand hover:opacity-90 text-white font-semibold px-6 py-3 transition">
-            Ver productos
-          </button>
-          {waReady && (
-            <a
-              href={waLink}
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-full border border-stone-600 hover:border-stone-400 text-stone-100 font-semibold px-6 py-3 inline-flex items-center gap-2 transition"
-            >
-              <MessageCircle size={18} /> Escribinos
-            </a>
-          )}
-        </div>
-      </div>
+      <div className="absolute w-72 h-72 rounded-full bg-brand opacity-20 blur-3xl pointer-events-none" style={{ top: "-6rem", right: "-6rem" }} />
+      <div className="max-w-6xl mx-auto px-4 sm:px-8 py-14 sm:py-20 relative z-10">{textBlock}</div>
     </section>
   );
 }
@@ -452,9 +483,13 @@ export function Footer({ branding, config, onAdminClick, showAdminLink }) {
       <div className="max-w-6xl mx-auto px-5 sm:px-8 py-12 grid sm:grid-cols-3 gap-8">
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <span className="w-8 h-8 rounded-full bg-brand-ink-soft flex items-center justify-center">
-              <span className="font-display font-bold text-brand-accent text-xs">{(branding.name || "?").charAt(0).toUpperCase()}</span>
-            </span>
+            {branding.logoImage ? (
+              <img src={branding.logoImage} alt={branding.name} className="w-8 h-8 rounded-full object-cover" />
+            ) : (
+              <span className="w-8 h-8 rounded-full bg-brand-ink-soft flex items-center justify-center">
+                <span className="font-display font-bold text-brand-accent text-xs">{(branding.name || "?").charAt(0).toUpperCase()}</span>
+              </span>
+            )}
             <span className="font-display font-bold text-white">{branding.name}</span>
           </div>
           <p className="text-sm text-stone-400 max-w-xs">{config.welcomeText}</p>
