@@ -1,20 +1,25 @@
 import { getStore } from "@netlify/blobs";
 
-// Únicas claves que esta tienda guarda: catálogo, categorías, configuración y pedidos.
-const ALLOWED_KEYS = ["products", "categories", "config", "orders"];
+// Claves válidas: "sites" (registro de tiendas), "platform" (acceso del
+// administrador general), o "site:<id>:<parte>" para los datos de cada tienda.
+const SITE_KEY_RE = /^site:[a-zA-Z0-9_-]+:(products|categories|config|orders)$/;
+
+function isValidKey(key) {
+  return key === "sites" || key === "platform" || SITE_KEY_RE.test(key);
+}
 
 export default async (req) => {
   const url = new URL(req.url);
   const key = url.searchParams.get("key");
 
-  if (!key || !ALLOWED_KEYS.includes(key)) {
+  if (!key || !isValidKey(key)) {
     return new Response(JSON.stringify({ error: "clave inválida" }), {
       status: 400,
       headers: { "content-type": "application/json" },
     });
   }
 
-  const store = getStore({ name: "lowgarten-data", consistency: "strong" });
+  const store = getStore({ name: "lowgarten-platform", consistency: "strong" });
 
   if (req.method === "GET") {
     const value = await store.get(key, { type: "json" });
