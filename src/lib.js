@@ -414,6 +414,7 @@ export const DEFAULT_SITE_CONFIG = {
   tagline: "Elegí tus productos y coordinamos el pedido por WhatsApp.",
   heroButtonText: "Ver productos",
   logoSize: "md",
+  carouselImages: [],
   welcomeText: "Mirá nuestros productos y hacé tu pedido en un toque.",
   whatsapp: "",
   currency: "$",
