@@ -59,9 +59,9 @@ function QuickAction({ icon: Icon, label, onClick }) {
   );
 }
 
-export function AdminDashboard({ products, categories, orders, onNavigate, waReady, onShareCatalog }) {
+export function AdminDashboard({ products, categories, orders, onNavigate, waReady, onShareCatalog, productLimit }) {
   const stats = [
-    { label: "Productos", value: products.length },
+    { label: productLimit ? `Productos (${products.length}/${productLimit})` : "Productos", value: products.length },
     { label: "Activos", value: products.filter((p) => p.active).length },
     { label: "Agotados", value: products.filter((p) => !p.inStock).length },
     { label: "Categorías", value: categories.length },
@@ -90,7 +90,11 @@ export function AdminDashboard({ products, categories, orders, onNavigate, waRea
       </div>
       <p className="font-mono-data text-xs uppercase tracking-wider text-stone-400 mb-3">Accesos rápidos</p>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        <QuickAction icon={Plus} label="Agregar producto" onClick={() => onNavigate("products", "new")} />
+        <QuickAction
+          icon={Plus}
+          label={productLimit !== null && productLimit !== undefined && products.length >= productLimit ? "Límite alcanzado" : "Agregar producto"}
+          onClick={() => onNavigate("products", "new")}
+        />
         <QuickAction icon={Package} label="Ver productos" onClick={() => onNavigate("products")} />
         <QuickAction icon={Tags} label="Categorías" onClick={() => onNavigate("categories")} />
         <QuickAction icon={Share2} label="Compartir catálogo" onClick={onShareCatalog} />
@@ -100,23 +104,41 @@ export function AdminDashboard({ products, categories, orders, onNavigate, waRea
   );
 }
 
-export function AdminProductsList({ products, categories, currency, onEdit, onNew, onToggleActive, onDelete, onShareCatalog }) {
+export function AdminProductsList({ products, categories, currency, onEdit, onNew, onToggleActive, onDelete, onShareCatalog, productLimit }) {
   const [confirmId, setConfirmId] = useState(null);
   const [q, setQ] = useState("");
+  const atLimit = productLimit !== null && productLimit !== undefined && products.length >= productLimit;
   const filtered = products.filter((p) => p.name.toLowerCase().includes(q.toLowerCase()));
   return (
     <div>
       <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
-        <h1 className="font-display text-2xl font-bold text-stone-900">Productos</h1>
+        <div>
+          <h1 className="font-display text-2xl font-bold text-stone-900">Productos</h1>
+          {productLimit !== null && productLimit !== undefined && (
+            <p className="text-xs text-stone-400 mt-0.5">{products.length} / {productLimit} productos usados</p>
+          )}
+        </div>
         <div className="flex gap-2">
           <button type="button" onClick={onShareCatalog} className="inline-flex items-center gap-1.5 bg-white border border-stone-300 hover:border-stone-400 text-stone-700 text-sm font-semibold rounded-full px-4 py-2.5 transition">
             <Share2 size={16} /> Compartir catálogo
           </button>
-          <button type="button" onClick={onNew} className="inline-flex items-center gap-1.5 bg-stone-900 hover:bg-stone-800 text-white text-sm font-semibold rounded-full px-4 py-2.5 transition">
+          <button
+            type="button"
+            onClick={onNew}
+            disabled={atLimit}
+            title={atLimit ? `Alcanzaste el límite de ${productLimit} productos` : undefined}
+            className="inline-flex items-center gap-1.5 bg-stone-900 hover:bg-stone-800 text-white text-sm font-semibold rounded-full px-4 py-2.5 transition disabled:opacity-40 disabled:cursor-not-allowed"
+          >
             <Plus size={16} /> Agregar producto
           </button>
         </div>
       </div>
+      {atLimit && (
+        <div className="mb-4 flex items-start gap-2.5 bg-orange-50 border border-orange-200 text-orange-900 rounded-2xl p-3.5 text-sm">
+          <AlertCircle size={16} className="mt-0.5 shrink-0" />
+          <p>Alcanzaste el límite de {productLimit} productos de tu plan. Para cargar más, contactá a quien te dio de alta.</p>
+        </div>
+      )}
       <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar producto..." className="w-full sm:w-72 border border-stone-300 rounded-full px-4 py-2 text-sm mb-4 focus:outline-none" />
       <div className="space-y-2.5">
         {filtered.length === 0 && <p className="text-sm text-stone-400 py-10 text-center">No hay productos que coincidan.</p>}
@@ -417,12 +439,32 @@ export function AdminConfigForm({ config, onSave }) {
         <Field label="Texto del botón principal">
           <input value={form.heroButtonText} onChange={(e) => set("heroButtonText", e.target.value)} className={inputCls()} placeholder="Ver productos" />
         </Field>
+        <div>
+          <label className="block text-xs font-semibold text-stone-600 mb-2">Tamaño del logo</label>
+          <div className="grid grid-cols-3 gap-2.5">
+            {[
+              { id: "sm", label: "Chico" },
+              { id: "md", label: "Mediano" },
+              { id: "lg", label: "Grande" },
+            ].map((opt) => (
+              <button
+                type="button"
+                key={opt.id}
+                onClick={() => set("logoSize", opt.id)}
+                className={`rounded-xl border py-2.5 text-xs font-medium transition ${form.logoSize === opt.id ? "border-stone-900 bg-stone-50 text-stone-900" : "border-stone-200 text-stone-500 hover:border-stone-400"}`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
         <Field label="Texto de bienvenida">
           <textarea rows={3} value={form.welcomeText} onChange={(e) => set("welcomeText", e.target.value)} className={inputCls()} />
         </Field>
         <div className="grid sm:grid-cols-2 gap-4">
           <Field label="WhatsApp (con código de país, solo números)">
-            <input value={form.whatsapp} onChange={(e) => set("whatsapp", e.target.value)} className={inputCls()} placeholder="5491112345678" />
+            <input value={form.whatsapp} onChange={(e) => set("whatsapp", e.target.value)} className={inputCls()} placeholder="541112345678" />
+            <p className="text-xs text-stone-400 mt-1">Tu número de WhatsApp habitual, con código de país. Ej: si tu celular es 11 1234-5678, poné 541112345678.</p>
           </Field>
           <Field label="Moneda">
             <input value={form.currency} onChange={(e) => set("currency", e.target.value)} className={inputCls()} placeholder="$" />

@@ -91,6 +91,7 @@ function SiteForm({ site, onCancel, onSave, existingSlugs }) {
   const [paletteId, setPaletteId] = useState(site ? site.paletteId : PRESET_PALETTES[0].id);
   const [heroStyle, setHeroStyle] = useState(site && site.heroStyle ? site.heroStyle : "text");
   const [radiusStyle, setRadiusStyle] = useState(site && site.radiusStyle ? site.radiusStyle : "rounded");
+  const [productLimit, setProductLimit] = useState(site && site.productLimit ? String(site.productLimit) : "");
   const [logoImage, setLogoImage] = useState("");
   const [heroImage, setHeroImage] = useState("");
   const [faviconImage, setFaviconImage] = useState("");
@@ -110,13 +111,14 @@ function SiteForm({ site, onCancel, onSave, existingSlugs }) {
     e.preventDefault();
     if (!name.trim()) { setError("Ingresá un nombre."); return; }
     const branding = { logoImage, heroImage, faviconImage };
+    const limit = productLimit.trim() ? Math.max(0, parseInt(productLimit, 10) || 0) : null;
     if (isNew) {
       let slug = slugify(name);
       let n = 2;
       while (existingSlugs.includes(slug)) { slug = `${slugify(name)}-${n}`; n += 1; }
-      onSave({ id: genId("site"), slug, name: name.trim(), paletteId, heroStyle, radiusStyle, branding });
+      onSave({ id: genId("site"), slug, name: name.trim(), paletteId, heroStyle, radiusStyle, productLimit: limit, branding });
     } else {
-      onSave({ ...site, name: name.trim(), paletteId, heroStyle, radiusStyle, branding });
+      onSave({ ...site, name: name.trim(), paletteId, heroStyle, radiusStyle, productLimit: limit, branding });
     }
   }
 
@@ -159,6 +161,18 @@ function SiteForm({ site, onCancel, onSave, existingSlugs }) {
 
         <Field label="Ícono de la pestaña del navegador (favicon)">
           <ImageSlot value={faviconImage} onChange={setFaviconImage} maxDim={256} quality={0.85} />
+        </Field>
+
+        <Field label="Límite de productos (opcional)">
+          <input
+            type="number"
+            min="0"
+            value={productLimit}
+            onChange={(e) => setProductLimit(e.target.value)}
+            className={inputCls()}
+            placeholder="Sin límite"
+          />
+          <p className="text-xs text-stone-400 mt-1">Dejalo vacío para que el cliente pueda cargar productos sin límite.</p>
         </Field>
 
         <button type="submit" className="w-full rounded-full bg-stone-900 hover:bg-stone-800 text-white font-semibold py-3">
@@ -215,7 +229,7 @@ export function PlatformDashboard({ sites, onCreateSite, onUpdateSite, onDeleteS
                   <PaletteSwatch palette={palette} size={40} />
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-stone-900 truncate">{s.name}</p>
-                    <p className="text-xs text-stone-400">{palette.name} · /t/{s.slug}</p>
+                    <p className="text-xs text-stone-400">{palette.name} · /t/{s.slug}{s.productLimit ? ` · límite ${s.productLimit} productos` : ""}</p>
                   </div>
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-2">

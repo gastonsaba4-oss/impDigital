@@ -151,6 +151,18 @@ export const PRESET_PALETTES = [
     surfaceTint: "#fff1f2",
     fontDisplay: "Inter",
   },
+  {
+    id: "boutique",
+    name: "Boutique",
+    description: "Cálido, hogar y deco de lujo",
+    primary: "#7c4a2d",
+    primaryHover: "#5f3820",
+    ink: "#1c1410",
+    inkSoft: "#3a2b1e",
+    accent: "#3f5b3a",
+    surfaceTint: "#faf6f0",
+    fontDisplay: "Cormorant",
+  },
 ];
 
 export function getPalette(id) {
@@ -170,7 +182,7 @@ export function paletteCssVars(palette) {
 }
 
 export const GLOBAL_CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Playfair+Display:wght@600;700&family=DM+Serif+Display&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Playfair+Display:wght@600;700&family=DM+Serif+Display&family=Cormorant:wght@600;700&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
 .font-display{font-family:var(--font-display, 'Fraunces', serif);}
 .font-body{font-family:'Inter',ui-sans-serif,sans-serif;}
 .font-mono-data{font-family:'Space Mono',ui-monospace,monospace;}
@@ -248,6 +260,20 @@ export function formatPhoneDisplay(digits) {
     return `+54 9 ${area} ${rest.slice(0, 4)}-${rest.slice(4)}`;
   }
   return `+${digits}`;
+}
+
+// WhatsApp exige que los celulares argentinos lleven un "9" después del 54 para
+// que el link de chat abra bien. La mayoría de la gente no lo escribe así al
+// anotar su propio número (lo común es "54 11 ...", sin el 9). Para que el
+// cliente pueda cargar su WhatsApp "de siempre" sin tener que saber este
+// detalle, lo agregamos nosotros automáticamente si hace falta.
+export function normalizeWhatsAppDigits(raw) {
+  const digits = (raw || "").replace(/\D/g, "");
+  if (!digits) return "";
+  if (digits.startsWith("54") && !digits.startsWith("549") && digits.length >= 12 && digits.length <= 13) {
+    return `549${digits.slice(2)}`;
+  }
+  return digits;
 }
 
 export function buildWhatsAppMessage(cartItems, total, config, customer) {
@@ -374,6 +400,12 @@ export function savePersonal(key, value) {
   }
 }
 
+export const LOGO_SIZES = {
+  sm: { box: "w-7 h-7", img: "h-7", text: "text-xs" },
+  md: { box: "w-9 h-9", img: "h-9", text: "text-sm" },
+  lg: { box: "w-14 h-14", img: "h-14", text: "text-lg" },
+};
+
 export function siteKey(siteId, part) {
   return `site:${siteId}:${part}`;
 }
@@ -381,6 +413,7 @@ export function siteKey(siteId, part) {
 export const DEFAULT_SITE_CONFIG = {
   tagline: "Elegí tus productos y coordinamos el pedido por WhatsApp.",
   heroButtonText: "Ver productos",
+  logoSize: "md",
   welcomeText: "Mirá nuestros productos y hacé tu pedido en un toque.",
   whatsapp: "",
   currency: "$",

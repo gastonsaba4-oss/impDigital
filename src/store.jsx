@@ -3,21 +3,22 @@ import {
   Search, ShoppingBag, X, Plus, Minus, Trash2, Star, Instagram, Facebook,
   MapPin, Clock, Phone, ArrowLeft, MessageCircle, ChevronRight,
 } from "lucide-react";
-import { fmt, calcDiscount, ICON_MAP } from "./lib.js";
+import { fmt, calcDiscount, ICON_MAP, formatPhoneDisplay, normalizeWhatsAppDigits, LOGO_SIZES } from "./lib.js";
 import { CategoryPill, ProductArt } from "./ui.jsx";
 
-export function Header({ branding, categories, cartCount, onCartClick, onLogoClick, searchQuery, setSearchQuery, activeCategory, setActiveCategory }) {
+export function Header({ branding, config, categories, cartCount, onCartClick, onLogoClick, searchQuery, setSearchQuery, activeCategory, setActiveCategory }) {
   const initial = (branding.name || "?").trim().charAt(0).toUpperCase();
+  const size = LOGO_SIZES[(config && config.logoSize) || "md"] || LOGO_SIZES.md;
   return (
     <header className="sticky top-0 z-30 bg-stone-50/95 backdrop-blur border-b border-stone-200">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16 gap-3">
           <button type="button" onClick={onLogoClick} className="flex items-center gap-2 min-w-0 flex-1">
             {branding.logoImage ? (
-              <img src={branding.logoImage} alt={branding.name} className="w-9 h-9 rounded-full object-cover shrink-0 border border-stone-200" />
+              <img src={branding.logoImage} alt={branding.name} className={`${size.img} w-auto object-contain shrink-0`} />
             ) : (
-              <span className="w-9 h-9 rounded-full bg-brand-ink flex items-center justify-center shrink-0">
-                <span className="font-display font-bold text-sm text-brand-accent">{initial}</span>
+              <span className={`${size.box} rounded-full bg-brand-ink flex items-center justify-center shrink-0`}>
+                <span className={`font-display font-bold ${size.text} text-brand-accent`}>{initial}</span>
               </span>
             )}
             <span className="font-display font-bold text-base sm:text-lg text-stone-900 truncate">{branding.name}</span>
@@ -478,16 +479,17 @@ export function CartDrawer({ open, onClose, items, currency, onInc, onDec, onRem
 }
 
 export function Footer({ branding, config, onAdminClick, showAdminLink }) {
+  const footerSize = LOGO_SIZES[(config && config.logoSize) || "md"] || LOGO_SIZES.md;
   return (
     <footer className="bg-brand-ink text-stone-300 mt-16">
       <div className="max-w-6xl mx-auto px-5 sm:px-8 py-12 grid sm:grid-cols-3 gap-8">
         <div>
           <div className="flex items-center gap-2 mb-3">
             {branding.logoImage ? (
-              <img src={branding.logoImage} alt={branding.name} className="w-8 h-8 rounded-full object-cover" />
+              <img src={branding.logoImage} alt={branding.name} className={`${footerSize.img} w-auto object-contain`} />
             ) : (
-              <span className="w-8 h-8 rounded-full bg-brand-ink-soft flex items-center justify-center">
-                <span className="font-display font-bold text-brand-accent text-xs">{(branding.name || "?").charAt(0).toUpperCase()}</span>
+              <span className={`${footerSize.box} rounded-full bg-brand-ink-soft flex items-center justify-center`}>
+                <span className={`font-display font-bold text-brand-accent ${footerSize.text}`}>{(branding.name || "?").charAt(0).toUpperCase()}</span>
               </span>
             )}
             <span className="font-display font-bold text-white">{branding.name}</span>
@@ -498,7 +500,7 @@ export function Footer({ branding, config, onAdminClick, showAdminLink }) {
           <p className="font-mono-data text-xs uppercase tracking-wider text-stone-500 mb-2">Contacto</p>
           {config.address && <p className="flex items-center gap-2"><MapPin size={14} /> {config.address}</p>}
           {config.hours && <p className="flex items-center gap-2"><Clock size={14} /> {config.hours}</p>}
-          {config.whatsapp && <p className="flex items-center gap-2"><Phone size={14} /> {config.whatsapp}</p>}
+          {config.whatsapp && <p className="flex items-center gap-2"><Phone size={14} /> {formatPhoneDisplay(normalizeWhatsAppDigits(config.whatsapp))}</p>}
         </div>
         <div className="text-sm space-y-3">
           <p className="font-mono-data text-xs uppercase tracking-wider text-stone-500 mb-2">Seguinos</p>
