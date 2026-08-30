@@ -2,7 +2,7 @@ import { getStore } from "@netlify/blobs";
 
 // Claves válidas: "sites" (registro de tiendas), "platform" (acceso del
 // administrador general), o "site:<id>:<parte>" para los datos de cada tienda.
-const SITE_KEY_RE = /^site:[a-zA-Z0-9_-]+:(products|categories|config|orders|branding)$/;
+const SITE_KEY_RE = /^site:[a-zA-Z0-9_-]+:(products|categories|config|orders|branding|services|appointments|schedule)$/;
 
 function isValidKey(key) {
   return key === "sites" || key === "platform" || SITE_KEY_RE.test(key);
