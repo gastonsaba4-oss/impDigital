@@ -3,7 +3,7 @@ import {
   Search, ShoppingBag, X, Plus, Minus, Trash2, Star, Instagram, Facebook,
   MapPin, Clock, Phone, ArrowLeft, MessageCircle, ChevronRight,
 } from "lucide-react";
-import { fmt, calcDiscount, ICON_MAP, formatPhoneDisplay, normalizeWhatsAppDigits, LOGO_SIZES } from "./lib.js";
+import { fmt, calcDiscount, ICON_MAP, formatPhoneDisplay, normalizeWhatsAppDigits, LOGO_SIZES, NAME_SIZE_CLASSES } from "./lib.js";
 import { CategoryPill, ProductArt } from "./ui.jsx";
 
 export function ImageCarousel({ images }) {
@@ -52,36 +52,61 @@ export function ImageCarousel({ images }) {
 export function Header({ branding, config, categories, cartCount, onCartClick, onLogoClick, searchQuery, setSearchQuery, activeCategory, setActiveCategory, showCart, searchPlaceholder }) {
   const initial = (branding.name || "?").trim().charAt(0).toUpperCase();
   const size = LOGO_SIZES[(config && config.logoSize) || "md"] || LOGO_SIZES.md;
+  const nameCls = NAME_SIZE_CLASSES[(config && config.nameSize) || "md"] || NAME_SIZE_CLASSES.md;
+  const layout = (config && config.headerLayout) || "left";
   const cartVisible = showCart !== false;
+
+  const logoBlock = (
+    <button type="button" onClick={onLogoClick} className="flex items-center gap-2 min-w-0">
+      {branding.logoImage ? (
+        <img src={branding.logoImage} alt={branding.name} className={`${size.img} w-auto object-contain shrink-0`} />
+      ) : (
+        <span className={`${size.box} rounded-full bg-brand-ink flex items-center justify-center shrink-0`}>
+          <span className={`font-display font-bold ${size.text} text-brand-accent`}>{initial}</span>
+        </span>
+      )}
+      <span className={`font-display font-bold ${nameCls} text-stone-900 truncate`}>{branding.name}</span>
+    </button>
+  );
+
+  const cartButton = cartVisible ? (
+    <button
+      type="button"
+      onClick={onCartClick}
+      className="relative w-10 h-10 rounded-full bg-brand-ink text-white flex items-center justify-center hover:bg-brand transition shrink-0"
+    >
+      <ShoppingBag size={18} />
+      {cartCount > 0 && (
+        <span className="absolute -top-1 -right-1 bg-brand-accent text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+          {cartCount}
+        </span>
+      )}
+    </button>
+  ) : (
+    <span className="w-10 h-10 shrink-0" aria-hidden="true" />
+  );
+  const cartSpacer = <span className="w-10 h-10 shrink-0" aria-hidden="true" />;
+
   return (
     <header className="sticky top-0 z-30 bg-stone-50/95 backdrop-blur border-b border-stone-200">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-16 gap-3">
-          <button type="button" onClick={onLogoClick} className="flex items-center gap-2 min-w-0 flex-1">
-            {branding.logoImage ? (
-              <img src={branding.logoImage} alt={branding.name} className={`${size.img} w-auto object-contain shrink-0`} />
-            ) : (
-              <span className={`${size.box} rounded-full bg-brand-ink flex items-center justify-center shrink-0`}>
-                <span className={`font-display font-bold ${size.text} text-brand-accent`}>{initial}</span>
-              </span>
-            )}
-            <span className="font-display font-bold text-base sm:text-lg text-stone-900 truncate">{branding.name}</span>
-          </button>
-          {cartVisible && (
-            <button
-              type="button"
-              onClick={onCartClick}
-              className="relative w-10 h-10 rounded-full bg-brand-ink text-white flex items-center justify-center hover:bg-brand transition shrink-0"
-            >
-              <ShoppingBag size={18} />
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-brand-accent text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
-                  {cartCount}
-                </span>
-              )}
-            </button>
-          )}
-        </div>
+        {layout === "center" ? (
+          <div className="flex items-center justify-between h-16 gap-3">
+            {cartSpacer}
+            <div className="flex-1 flex justify-center min-w-0">{logoBlock}</div>
+            {cartButton}
+          </div>
+        ) : layout === "right" ? (
+          <div className="flex items-center justify-between h-16 gap-3">
+            {cartButton}
+            <div className="flex-1 flex justify-end min-w-0">{logoBlock}</div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between h-16 gap-3">
+            <div className="flex-1 min-w-0">{logoBlock}</div>
+            {cartButton}
+          </div>
+        )}
         <div className="pb-3">
           <div className="relative">
             <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />

@@ -406,6 +406,12 @@ export const LOGO_SIZES = {
   lg: { box: "w-14 h-14", img: "h-14", text: "text-lg" },
 };
 
+export const NAME_SIZE_CLASSES = {
+  sm: "text-sm sm:text-base",
+  md: "text-base sm:text-lg",
+  lg: "text-lg sm:text-2xl",
+};
+
 export function siteKey(siteId, part) {
   return `site:${siteId}:${part}`;
 }
@@ -414,6 +420,8 @@ export const DEFAULT_SITE_CONFIG = {
   tagline: "Elegí tus productos y coordinamos el pedido por WhatsApp.",
   heroButtonText: "Ver productos",
   logoSize: "md",
+  headerLayout: "left",
+  nameSize: "md",
   carouselImages: [],
   welcomeText: "Mirá nuestros productos y hacé tu pedido en un toque.",
   whatsapp: "",

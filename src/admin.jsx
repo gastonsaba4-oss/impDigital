@@ -459,6 +459,45 @@ export function AdminConfigForm({ config, onSave }) {
             ))}
           </div>
         </div>
+        <div>
+          <label className="block text-xs font-semibold text-stone-600 mb-2">Tamaño del nombre</label>
+          <div className="grid grid-cols-3 gap-2.5">
+            {[
+              { id: "sm", label: "Chico" },
+              { id: "md", label: "Mediano" },
+              { id: "lg", label: "Grande" },
+            ].map((opt) => (
+              <button
+                type="button"
+                key={opt.id}
+                onClick={() => set("nameSize", opt.id)}
+                className={`rounded-xl border py-2.5 text-xs font-medium transition ${form.nameSize === opt.id ? "border-stone-900 bg-stone-50 text-stone-900" : "border-stone-200 text-stone-500 hover:border-stone-400"}`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-stone-600 mb-2">Posición del logo en el encabezado</label>
+          <div className="grid grid-cols-3 gap-2.5">
+            {[
+              { id: "left", label: "Izquierda" },
+              { id: "center", label: "Centro" },
+              { id: "right", label: "Derecha" },
+            ].map((opt) => (
+              <button
+                type="button"
+                key={opt.id}
+                onClick={() => set("headerLayout", opt.id)}
+                className={`rounded-xl border py-2.5 text-xs font-medium transition ${form.headerLayout === opt.id ? "border-stone-900 bg-stone-50 text-stone-900" : "border-stone-200 text-stone-500 hover:border-stone-400"}`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-stone-400 mt-1.5">El resto del encabezado (buscador, carrito) se acomoda solo, sin superponerse.</p>
+        </div>
         <Field label="Texto de bienvenida">
           <textarea rows={3} value={form.welcomeText} onChange={(e) => set("welcomeText", e.target.value)} className={inputCls()} />
         </Field>

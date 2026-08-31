@@ -97,6 +97,8 @@ function SiteForm({ site, onCancel, onSave, existingSlugs }) {
   const [heroImage, setHeroImage] = useState("");
   const [faviconImage, setFaviconImage] = useState("");
   const [logoSize, setLogoSize] = useState("md");
+  const [nameSize, setNameSize] = useState("md");
+  const [headerLayout, setHeaderLayout] = useState("left");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -110,6 +112,8 @@ function SiteForm({ site, onCancel, onSave, existingSlugs }) {
       setHeroImage(branding.heroImage || "");
       setFaviconImage(branding.faviconImage || "");
       setLogoSize((cfg && cfg.logoSize) || "md");
+      setNameSize((cfg && cfg.nameSize) || "md");
+      setHeaderLayout((cfg && cfg.headerLayout) || "left");
     })();
   }, [site]);
 
@@ -122,9 +126,9 @@ function SiteForm({ site, onCancel, onSave, existingSlugs }) {
       let slug = slugify(name);
       let n = 2;
       while (existingSlugs.includes(slug)) { slug = `${slugify(name)}-${n}`; n += 1; }
-      onSave({ id: genId("site"), slug, name: name.trim(), businessType, paletteId, heroStyle, radiusStyle, productLimit: limit, branding, logoSize });
+      onSave({ id: genId("site"), slug, name: name.trim(), businessType, paletteId, heroStyle, radiusStyle, productLimit: limit, branding, logoSize, nameSize, headerLayout });
     } else {
-      onSave({ ...site, name: name.trim(), paletteId, heroStyle, radiusStyle, productLimit: limit, branding, logoSize });
+      onSave({ ...site, name: name.trim(), paletteId, heroStyle, radiusStyle, productLimit: limit, branding, logoSize, nameSize, headerLayout });
     }
   }
 
@@ -198,6 +202,47 @@ function SiteForm({ site, onCancel, onSave, existingSlugs }) {
             ))}
           </div>
           <p className="text-xs text-stone-400 mt-1.5">El cliente puede volver a cambiarlo desde su propio panel.</p>
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-stone-600 mb-2">Tamaño del nombre</label>
+          <div className="grid grid-cols-3 gap-2.5">
+            {[
+              { id: "sm", label: "Chico" },
+              { id: "md", label: "Mediano" },
+              { id: "lg", label: "Grande" },
+            ].map((opt) => (
+              <button
+                type="button"
+                key={opt.id}
+                onClick={() => setNameSize(opt.id)}
+                className={`rounded-xl border py-2.5 text-xs font-medium transition ${nameSize === opt.id ? "border-stone-900 bg-stone-50 text-stone-900" : "border-stone-200 text-stone-500 hover:border-stone-400"}`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-stone-600 mb-2">Posición del logo en el encabezado</label>
+          <div className="grid grid-cols-3 gap-2.5">
+            {[
+              { id: "left", label: "Izquierda" },
+              { id: "center", label: "Centro" },
+              { id: "right", label: "Derecha" },
+            ].map((opt) => (
+              <button
+                type="button"
+                key={opt.id}
+                onClick={() => setHeaderLayout(opt.id)}
+                className={`rounded-xl border py-2.5 text-xs font-medium transition ${headerLayout === opt.id ? "border-stone-900 bg-stone-50 text-stone-900" : "border-stone-200 text-stone-500 hover:border-stone-400"}`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-stone-400 mt-1.5">El buscador y el carrito se acomodan solos para no superponerse.</p>
         </div>
 
         <div>
