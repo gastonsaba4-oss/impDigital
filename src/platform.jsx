@@ -147,7 +147,7 @@ function SiteForm({ site, onCancel, onSave, existingSlugs }) {
         {isNew && (
           <div>
             <label className="block text-xs font-semibold text-stone-600 mb-2">Tipo de negocio</label>
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
               <button
                 type="button"
                 onClick={() => setBusinessType("tienda")}
@@ -155,6 +155,14 @@ function SiteForm({ site, onCancel, onSave, existingSlugs }) {
               >
                 <p className="text-sm font-semibold text-stone-900">Tienda</p>
                 <p className="text-xs text-stone-400 mt-0.5">Catálogo de productos, carrito y pedidos por WhatsApp.</p>
+              </button>
+              <button
+                type="button"
+                onClick={() => setBusinessType("gastronomia")}
+                className={`rounded-2xl border p-3.5 text-left transition ${businessType === "gastronomia" ? "border-stone-900 bg-stone-50" : "border-stone-200 hover:border-stone-400"}`}
+              >
+                <p className="text-sm font-semibold text-stone-900">Gastronomía / Delivery</p>
+                <p className="text-xs text-stone-400 mt-0.5">Menú por categorías, zonas de envío y horario de atención.</p>
               </button>
               <button
                 type="button"
@@ -170,7 +178,7 @@ function SiteForm({ site, onCancel, onSave, existingSlugs }) {
         )}
         {!isNew && (
           <p className="text-xs text-stone-400 -mt-4">
-            Tipo de negocio: <span className="font-medium text-stone-600">{site.businessType === "estetica" ? "Centro de estética" : "Tienda"}</span> (no se puede cambiar).
+            Tipo de negocio: <span className="font-medium text-stone-600">{site.businessType === "estetica" ? "Centro de estética" : site.businessType === "gastronomia" ? "Gastronomía / Delivery" : "Tienda"}</span> (no se puede cambiar).
           </p>
         )}
 
@@ -265,7 +273,7 @@ function SiteForm({ site, onCancel, onSave, existingSlugs }) {
           <ImageSlot value={faviconImage} onChange={setFaviconImage} maxDim={256} quality={0.85} />
         </Field>
 
-        <Field label={`Límite de ${(site ? site.businessType : businessType) === "estetica" ? "servicios" : "productos"} (opcional)`}>
+        <Field label={`Límite de ${(() => { const bt = site ? site.businessType : businessType; return bt === "estetica" ? "servicios" : bt === "gastronomia" ? "platos" : "productos"; })()} (opcional)`}>
           <input
             type="number"
             min="0"
@@ -285,9 +293,81 @@ function SiteForm({ site, onCancel, onSave, existingSlugs }) {
   );
 }
 
+function SitePreview({ slug }) {
+  const width = 1200;
+  const height = 760;
+  return (
+    <div className="relative w-24 h-16 sm:w-32 sm:h-20 rounded-xl overflow-hidden border border-stone-200 bg-stone-50 shrink-0">
+      <iframe
+        src={`/t/${slug}`}
+        title={`Vista previa de ${slug}`}
+        loading="lazy"
+        tabIndex={-1}
+        style={{
+          width: `${width}px`,
+          height: `${height}px`,
+          border: "none",
+          pointerEvents: "none",
+          transform: `scale(${96 / width})`,
+          transformOrigin: "top left",
+        }}
+        className="sm:hidden"
+      />
+      <iframe
+        src={`/t/${slug}`}
+        title={`Vista previa de ${slug}`}
+        loading="lazy"
+        tabIndex={-1}
+        style={{
+          width: `${width}px`,
+          height: `${height}px`,
+          border: "none",
+          pointerEvents: "none",
+          transform: `scale(${128 / width})`,
+          transformOrigin: "top left",
+        }}
+        className="hidden sm:block"
+      />
+    </div>
+  );
+}
+
+function itemWordFor(businessType) {
+  if (businessType === "estetica") return { singular: "servicio", plural: "servicios" };
+  if (businessType === "gastronomia") return { singular: "plato", plural: "platos" };
+  return { singular: "producto", plural: "productos" };
+}
+
+function SiteStatusBadge({ site }) {
+  const [count, setCount] = useState(null);
+  useEffect(() => {
+    let alive = true;
+    const key = site.businessType === "estetica" ? "services" : "products";
+    loadShared(siteKey(site.id, key), []).then((list) => { if (alive) setCount((list || []).length); });
+    return () => { alive = false; };
+  }, [site.id, site.businessType]);
+  const words = itemWordFor(site.businessType);
+  if (count === null) {
+    return <span className="inline-flex items-center gap-1.5 text-xs text-stone-400"><span className="w-1.5 h-1.5 rounded-full bg-stone-300 animate-pulse" /> Cargando...</span>;
+  }
+  if (count === 0) {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1">
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> Sin {words.plural} cargados
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1">
+      <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" /> {count} {count === 1 ? words.singular : words.plural} cargados
+    </span>
+  );
+}
+
 export function PlatformDashboard({ sites, onCreateSite, onUpdateSite, onDeleteSite, onRegenerateCode }) {
   const [view, setView] = useState("list"); // 'list' | 'new' | site object being edited
   const [confirmId, setConfirmId] = useState(null);
+  const [query, setQuery] = useState("");
 
   if (view === "new" || (view && typeof view === "object")) {
     const editingSite = view === "new" ? null : view;
@@ -314,6 +394,14 @@ export function PlatformDashboard({ sites, onCreateSite, onUpdateSite, onDeleteS
         </button>
       </div>
       <p className="text-sm text-stone-500 mb-6">Acá manejás el nombre y el diseño de cada tienda. Cada cliente entra a la suya con el link y el código que le compartas.</p>
+      {sites.length > 4 && (
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Buscar por nombre o link..."
+          className="w-full bg-white border border-stone-200 rounded-full px-4 py-2.5 text-sm mb-4 focus:outline-none ring-brand"
+        />
+      )}
       {sites.length === 0 ? (
         <div className="text-center py-16 text-stone-400 bg-white border border-stone-200 rounded-3xl">
           <Store size={32} className="mx-auto mb-3" strokeWidth={1} />
@@ -321,17 +409,27 @@ export function PlatformDashboard({ sites, onCreateSite, onUpdateSite, onDeleteS
         </div>
       ) : (
         <div className="space-y-3">
-          {sites.map((s) => {
+          {sites
+            .filter((s) => {
+              const q = query.trim().toLowerCase();
+              if (!q) return true;
+              return s.name.toLowerCase().includes(q) || s.slug.toLowerCase().includes(q);
+            })
+            .map((s) => {
             const palette = getPalette(s.paletteId);
             const storeUrl = `/t/${s.slug}`;
             const shareMsg = `Hola! Ya está lista tu tienda "${s.name}".\n\nEntrá al panel para cargar tus productos:\n${window.location.origin}${storeUrl}/admin\n\nTu código de acceso es: ${s.clientCode}`;
             return (
               <div key={s.id} className="bg-white border border-stone-200 rounded-2xl p-4">
                 <div className="flex items-center gap-3">
-                  <PaletteSwatch palette={palette} size={40} />
+                  <SitePreview slug={s.slug} />
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-stone-900 truncate">{s.name}</p>
-                    <p className="text-xs text-stone-400">{palette.name} · /t/{s.slug}{s.productLimit ? ` · límite ${s.productLimit} productos` : ""}</p>
+                    <div className="flex items-center gap-2 mb-1">
+                      <PaletteSwatch palette={palette} size={20} />
+                      <p className="font-medium text-stone-900 truncate">{s.name}</p>
+                    </div>
+                    <p className="text-xs text-stone-400 mb-1.5">{palette.name} · /t/{s.slug}{s.productLimit ? ` · límite ${s.productLimit}` : ""}</p>
+                    <SiteStatusBadge site={s} />
                   </div>
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
